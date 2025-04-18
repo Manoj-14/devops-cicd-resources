@@ -1,0 +1,124 @@
+def COLOR_MAP = [
+    'SUCCESS': 'good',
+    "FAILURE": 'danger',
+]
+
+pipeline{
+    agent any
+    //global level enviranment var
+    tools {
+        maven "MAVEN3.9" // you will get it in tools of jenkins
+        jdk "JDK17"
+    }
+
+    environment {
+        registryCredential = "ecr:us-east-1:awscreds" // in thr format 'ecr:availablity-zone:awsCredentialNameStoredInJenkins'
+        imageName = '010928215097.dkr.ecr.us-east-1.amazonaws.com/vprofileappimage' //got from ECR
+        vprofileRegistry = 'https://010928215097.dkr.ecr.us-east-1.amazonaws.com' // url of the above except image name at last with https
+        cluster = "Vprofile" //ECS cluster name
+        service = "vprofileappsvc" // cluster have service -->  means service that run our container and also the ELB that add to container
+    }
+
+    stages{
+        stage("Fetch code") {
+            steps { //inside mention plugin name
+                git branch : 'docker' ,url: 'https://github.com/hkhcoder/vprofile-project.git'
+            }
+        }
+        stage("Build") {
+            steps { //Shell cmd
+                sh 'mvn install -DskipTests' //skip the test
+            }
+            post { //post step
+                success{ //if success
+                    echo "Archiving artifact"
+                    archiveArtifacts artifacts: '**/*.war' //plugin name with regex to search .war file in workspace
+                }
+            }
+        }
+        stage("Unit test") {
+            steps { //Shell cmd
+                sh 'mvn test'
+            }
+        }
+        stage("Checkstyle Analysis") {
+            steps { //Shell cmd
+                sh 'mvn checkstyle:checkstyle'
+            }
+        }
+        stage('Sonar Code analysis') {
+            //stage level enviranment var
+            environment{
+                scannerHome = tool 'SONAR6.2' //tool name
+            }
+            steps {
+                withSonarQubeEnv('sonarserver') {
+                    //multiline cmds
+                    // make sure no space after \
+                    sh '''
+                    ${scannerHome}/bin/sonar-scanner \
+                    -Dsonar.projectKey=vprofile \
+                    -Dsonar.projectName=vprofile-repo \
+                    -Dsonar.projectVersion=1.0 \
+                    -Dsonar.sources=src \
+                    -Dsonar.java.binaries=target \
+                    -Dsonar.junit.reportsPath=target/surefire-reports \
+                    -Dsonar.jacoco.reportPaths=target/jacoco.exec \
+                    -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml
+                    '''
+                }
+            }
+        }
+        // stage for Quality Gate of SonarQube
+        stage("Quality Gate"){
+            steps {
+                timeout(time:1,unit:'HOURS'){
+                    waitForQualityGate abortPipeline: true //wait until you get status from sonarqube quality gate webhook (need to setup sirst in sonarqube project)
+                }
+            }
+        }
+        // build the docker image
+        stage("Build App image"){
+            steps {
+                script {
+                    dockerImage = docker.build(imageName+":$BUILD_NUMBER","./Docker-files/app/multistage/")
+                }
+            }
+        }
+        // Upload to Amazon ECR
+        stage("Upload App Image"){
+            steps{
+                script{
+                    docker.withRegistry(vprofileRegistry,registryCredential){
+                        dockerImage.push("$BUILD_NUMBER")
+                        dockerImage.push("latest")
+                    }
+                }
+            }
+        }
+        // As already image is uploaded remove image from Storage
+        stage("Remove container Images"){
+            steps{
+                sh 'docker rmi -f $(docker images -a -q)' // $(docker images -a -q) --> is to list all image ids and  docker rmi -f --> remove them forcefully
+            }
+        }
+
+        stage('Deploy to ecs') {
+            steps {
+                withAWS(credentials: 'awscreds' , region: 'us-east-1'){
+                    // aws cli needs to be installed already in jenkins
+                    sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Slack Notification.'
+            slackSend channel: '#pipeline-notification',
+            color: COLOR_MAP[currentBuild.currentResult], //will recive good or danger as defined in above(line 1) function
+            message: "${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} for more info visit ${env.BUILD_URL}"
+        }
+    }
+}
