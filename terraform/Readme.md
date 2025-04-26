@@ -2,6 +2,7 @@
 1. Tool from Hashicorp
 2. Infrastructure as code (IaaC)
 3. Terraform maintains the state of infrastructure and it knows that what is the instance state i.e maintaing the state of infrastructure
+4. To perform actions on aws make sure you cofigured access keys in you cmd line using `aws configure`
 
 ### Provisioners
 - Provisioners in terraform are like terraform will execute it but can't manage the state (can't maintain)
@@ -20,3 +21,7 @@
 resourceType = aws_instance <br>
 resourceName = server <br/>
 attributeName = public_ip (this will present in state file)
+
+### Backend - s3
+- Don't stor the state file in SCM it may have sensitive info's
+- We can store it in s3 and terraform have integration for s3
