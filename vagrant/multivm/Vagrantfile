@@ -1,0 +1,60 @@
+Vagrant.configure("2") do |config|
+
+  # Set the global configuration for the VMs
+  config.vm.box_check_update = false
+
+  # Configure VM for web01 (Ubuntu 20.04 ARM64)
+  config.vm.define "scriptbox" do |scriptbox|
+    scriptbox.vm.box = "bandit145/centos_stream9_arm"  # ARM64 version of Ubuntu 20.04
+    scriptbox.vm.network "private_network",  ip: "198.168.56.41"  # Static private IP for scriptbox
+    scriptbox.vm.network "public_network" # Bridged network for Mac M1 chip
+    scriptbox.vm.provider "virtualbox" do |vb|
+      vb.memory = "1024"  # Set memory to 1GB
+      vb.allowlist_verified = true
+      vb.ssh_info_public = true
+    end
+    # Set the hostname
+    scriptbox.vm.hostname = "scriptbox"
+  end
+  config.vm.define "web01" do |web01|
+    web01.vm.box = "bandit145/centos_stream9_arm"  # ARM64 version of Ubuntu 20.04
+    web01.vm.network "private_network",  ip: "198.168.56.42"  # Static private IP for web01
+    web01.vm.network "public_network"  # Bridged network for Mac M1 chip
+
+    web01.vm.provider "virtualbox" do |vb|
+      vb.memory = "1024"  # Set memory to 1GB
+      vb.allowlist_verified = true
+      vb.ssh_info_public = true
+    end
+    # Set the hostname
+    web01.vm.hostname = "web01"
+  end
+
+  config.vm.define "web02" do |web02|
+    web02.vm.box = "bandit145/centos_stream9_arm"  # ARM64 version of Ubuntu 20.04
+    web02.vm.network "private_network",  ip: "198.168.56.43"  # Static private IP for web02
+    web02.vm.network "public_network"  # Bridged network for Mac M1 chip
+
+    web02.vm.provider "virtualbox" do |vb|
+      vb.memory = "1024"  # Set memory to 1GB
+      vb.allowlist_verified = true
+      vb.ssh_info_public = true
+    end
+    # Set the hostname
+    web02.vm.hostname = "web02"
+  end
+
+  config.vm.define "web03" do |web03|
+    web03.vm.box = "spox/ubuntu-arm" 
+    web03.vm.box_version = "1.0.0"
+    web03.vm.network "private_network",  ip: "198.168.56.44"  # Static private IP for web03
+    web03.vm.network "public_network"  # Bridged network for Mac M1 chip
+    web03.vm.provider "virtualbox" do |vb|
+      vb.memory = "1024"  # Set memory to 1GB
+      vb.allowlist_verified = true
+      vb.ssh_info_public = true
+    end
+    # Set the hostname
+    web03.vm.hostname = "web03"
+  end
+end

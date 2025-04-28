@@ -8,3 +8,9 @@
 
 *.tfstate
 *.tfstate.*
+
+node_modules
+
+.vagrant
+
+.DS_Store
