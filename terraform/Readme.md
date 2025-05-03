@@ -4,6 +4,22 @@
 3. Terraform maintains the state of infrastructure and it knows that what is the instance state i.e maintaing the state of infrastructure
 4. To perform actions on aws make sure you cofigured access keys in you cmd line using `aws configure`
 
+### Data types in variables
+- number
+- string
+- boolean
+- list
+- map
+- objects
+- tuples -> list of primitivesas mentioned in type ([number,string,number] = [12,'Terraform',23])
+- set -> no duplicate list
+- can use from `terraformvars.tfvars`
+- Var def orders (lower to higher priority):
+    1. Env vars
+    2. terraform.tf.vars
+    3. *.auto.tfvars (alphabetical order)
+    4. -var or -var-file (cmd line flags)
+
 ### Provisioners
 - Provisioners in terraform are like terraform will execute it but can't manage the state (can't maintain)
 
@@ -12,7 +28,7 @@
 - `terraform init` -> it scan all the tf file and if data block exists it will fetch it from the **terraform registry**
 - `terraform validate` -> check whether syntatically correct or not
 - `terraform plan` -> it gives what will be the impact of resource that we execute
-- `terraform apply` -> to run the code and it will git the plan first and then it will ask us whether it is ok to sote the output in terraform state if yes only it will run.            
+- `terraform apply` -> to run the code and it will git the plan first and then it will ask us whether it is ok to sote the output in terraform state if yes only it will run.
 - `terraform destory` -> destroy every resource that have created
 
 ### Output Attribute
