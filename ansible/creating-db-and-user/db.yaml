@@ -2,7 +2,17 @@
 - name: Setup DBserver
   hosts: dbsrvgrp
   become: yes
+  vars:
+    dbname: groups
+    dbuser: devops
+    dbpass: admin123
   tasks:
+    - debug: 
+        var: dbname
+
+    - debug:
+        msg: "Value of dbuser is {{dbuser}}"
+
     - name: Install MySQL server
       yum:
          name: mariadb-server
@@ -21,12 +31,14 @@
 
     - name: Create a new database with name 'accounts'
       mysql_db:
-        name: accounts
+        name: "{{dbname}}"
         state: present
 
     - name: Create database user with name 'admin' 
       mysql_user:
-        name: admin
-        password: 12345
+        name: "{{dbuser}}"
+        password: "{{dbpass}}"
         priv: '*.*:ALL'
         state: present
+
+#please refer official document for updated config on MySQL

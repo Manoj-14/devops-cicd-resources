@@ -2,23 +2,13 @@
 - name: Setup DBserver
   hosts: dbsrvgrp
   become: yes
-  vars:
-    dbname: groups
-    dbuser: devops
-    dbpass: admin123
   tasks:
-    - debug: 
-        var: dbname
-
-    - debug:
-        msg: "Value of dbuser is {{dbuser}}"
-
     - name: Install MySQL server
       yum:
          name: mariadb-server
          state: present
          
-    - name: Install Python MySQL 
+    - name: Install Python MySQL #we need to install PyMYSQL directly from yum or first install pip then install PyMySQL from pip
       yum:
          name: MySQL-python
          state: present
@@ -31,12 +21,12 @@
 
     - name: Create a new database with name 'accounts'
       mysql_db:
-        name: "{{dbname}}"
+        name: accounts
         state: present
 
     - name: Create database user with name 'admin' 
       mysql_user:
-        name: "{{dbuser}}"
-        password: "{{dbpass}}"
+        name: admin
+        password: 12345
         priv: '*.*:ALL'
         state: present
