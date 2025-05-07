@@ -105,7 +105,7 @@ For example:
 - we can do this using peering connection in AWS
 - you need to create a request from 1 and accept a request from another VPC
 - So when the instance is created it won't get where to send the traffic (VPC) so in routing table we need to add a rule by adding CIDR range of another VPC and Target is peering connection
-- You cannot select the VPC of another region in security group so mention the IP ranges to allow rules
+- You cannot select the VPC of another region in security group so add a roles in security groups od instances allowing the VPC's private IP's
 
 ## Project
 
