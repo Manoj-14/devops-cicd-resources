@@ -117,6 +117,9 @@
 
         #validate
         kops validate cluster --name=kubevpro.manojm.site  --state=s3://kopsstatemanm
+
+        #delete 
+        kops delete cluster --name=kubevpro.manojm.site  --state=s3://kopsstatemanm --yes
     ```
 ## K8s Objects
 - pod : contains and maintains container
@@ -281,4 +284,19 @@
 
     #decode
     echo -n "encodedValue" | base64 --decode
+```
+## Jobs
+- To run a container for defenite period of time
+- Similar to CRON job in linux
+
+## Deamon set
+- actually used to get logs
+- for monitoring nodes including master node
+## Cheet sheet and other cmds
+- Official cheatsheet: [cheatsheet](https://kubernetes.io/pt-br/docs/reference/kubectl/cheatsheet/)
+```bash
+    #cmd for dry run and get def file
+    kubectl run pod_name --image=nginx --dry-run=client -o yaml > nginxPod.yml
+
+    kubectl create deployment deploy_name --image=nginx --dry-run=client -o yaml > ngdeploy.yml
 ```
