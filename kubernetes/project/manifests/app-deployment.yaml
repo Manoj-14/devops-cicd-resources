@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vproapp
+  label: 
+    app: vproapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vproapp
+  template:
+    metadata:
+      labels:
+        app: vproapp
+    spec:
+      containers:
+      - name: vproapp
+        image: vprocontainers/vprofileapp
+        ports:
+        - name:  vpro-app-port
+          containerPort: 8080
+
+      # here using it to make sure other services are available before the app containers runs
+      initContainers:
+        - name: init-db
+          image:  busybox
+          #vprodb.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local(vprodb is service name) gives the complete IP and the below cmd is to check where the container is ready or not
+          command: ['sh', '-c', 'until nslookup vprodb.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for mydb; sleep 2; done;']
+        - name: init-rmc
+          image:  busybox
+          command: ['sh', '-c', 'until nslookup vprocache01.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for mc; sleep 2; done;']
+        - name: init-rmq
+          image:  busybox
+          command: ['sh', '-c', 'until nslookup vpromq01.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for rmq; sleep 2; done;']

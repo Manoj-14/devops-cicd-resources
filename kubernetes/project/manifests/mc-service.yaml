@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name:  vprocache01 #this should be the name that in application properties
+spec:
+  selector:
+    app: vpromc # any pod with albel app:vprodb
+  type: ClusterIP # for internal use
+  ports:
+  - name:  vpro-mc-service-port
+    port:  11211
+    targetPort:  vpro-mc-port
+    protocol: TCP

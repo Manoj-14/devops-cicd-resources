@@ -115,7 +115,7 @@
         #update cluster
         kops update cluster --name=kubevpro.manojm.site  --state=s3://kopsstatemanm --yes --admin
 
-        #validate
+        #validate (at the end you can use --wait 10m to wait for 10min)
         kops validate cluster --name=kubevpro.manojm.site  --state=s3://kopsstatemanm
 
         #delete 

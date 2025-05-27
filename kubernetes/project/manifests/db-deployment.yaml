@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vprodb
+  labels:
+    app: vprodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vprodb
+  template:
+    metadata:
+      labels:
+        app: vprodb
+    spec:
+      containers:
+      - name: vprodb
+        image: vprocontainers/vprofiledb
+        volumeMounts:
+          - name:  vpro-db-data
+            mountPath:  /var/lib/mysql
+        ports:
+        - name:  vpro-db-port
+          containerPort:  3006
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: app-secret
+                key: db-pass
+      volumes:
+        - name:  vpro-db-data
+          persistentVolumeClaim:
+            claimName: db-pv-claim
+
+      #specialized containers that run before the main application containers within a Pod
+      # here using it because to mount the path that path should be empty but here in ebs when the volume is created it create the 'loat+found' folder hence first we need to delete that folder then need to count to main container
+      initContainers:
+        - name: busybox #linux container
+          image:  busybox:latest
+          args: ["rm", "-rf", "/var/lib/mysql/lost+found"]
+          volumeMounts:
+            - name: vpro-db-data
+              mountPath:  /var/lib/mysql

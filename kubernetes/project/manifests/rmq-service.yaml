@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name:  vpromq01 #this should be the name that in application properties
+spec:
+  selector:
+    app: vprormq # any pod with label app:vprormq
+  type: ClusterIP # for internal use
+  ports:
+  - name:  vpro-rmq-service-port
+    port:  5672
+    targetPort:  vpro-rmq-port
+    protocol: TCP
