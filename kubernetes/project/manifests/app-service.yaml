@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name:  vpro-app-servie #this is used in ingress controller
+  name:  vpro-app-service #this is used in ingress controller
 spec:
   selector:
     app: vproapp # any pod with albel app:vproapp

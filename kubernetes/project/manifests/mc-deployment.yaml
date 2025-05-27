@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vpromc
-  label: 
+  labels: 
     app: vpromc
 spec:
   replicas: 1
