@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: helloworld-service
+spec:
+  ports:
+    - port: 80 #for internal
+        #targetPort: 8080 #container port
+      targetPort: vproapp-port #can also give name of the container port present in pod defination file
+      protocol: TCP
+  selector:
+    app: vproapp
+  type: LoadBalancer

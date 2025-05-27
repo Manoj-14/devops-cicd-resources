@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: my-app-port
+  selector: 
+    app: my-app #this should match with label (not only value bat also key)
+  type: ClusterIP  #internal service
