@@ -1,0 +1,87 @@
+name: "vprofile IAC"
+on:
+    push: 
+        branches: #when pushed on these branches
+            - main
+            - stage
+        paths: #and pushed on these folder
+            - terraform/**
+            - .github/**
+    pull_request: #when pull request comes
+        branches: #and merged on these branches
+            - main
+        paths: #and pushed on these folder
+            - terraform/*
+
+env:
+    AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} #get from github secret
+    AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+    BUCKET_TF_STATE: ${{secrets.BUCKET_TF_STATE}}
+    AWS_REGION: us-east-1
+    EKS_CLUSTER: vprofile-eks
+
+# can have multiple jobs    
+jobs:
+    #name of the job
+    terraform:
+        name: "Apply terraform code changes"
+        runs-on: ubuntu-latest #in which machine we need to run (uses ubuntu container)
+        defaults: #what defaults things to use
+            run:
+                shell: bash #use bash shell
+                working-directory: ./terraform #so this folder will be used by all the steps that we write below
+
+        steps:
+            - name: Check out the source code
+              uses: actions/checkout@v4  #use predefined checkout workflow (https://github.com/marketplace/actions/checkout)
+              #here after getting into ubuntu container it is going to terraform dir then checkout to branch
+            
+            - name: Setup terraform with specific version on runner
+              uses: hashicorp/setup-terraform@v3 #predefined in marketplace (https://github.com/marketplace/actions/hashicorp-setup-terraform)
+              with:
+                terraform_version: 1.6.3 # this is terraform version
+
+            - name: Terrafrom init
+              id: inti # id is to refference it in next task , git info of the task
+              run: terraform init -backend-config="bucket=$BUCKET_TF_STATE" #run the terraform inti and sore the state file (backed file) in mentioned s3
+
+            - name: Terraform format #to check the tf file fmt is correct or not
+              id: fmt
+              run: terraform fmt -check # -check option will only check if we don't mention means it will format the file
+              # the above will return non zero value if the format is not correct then the work flow will fail
+            
+            - name: Terraform validate
+              id: validate
+              run: terraform validate #going to check the syntex and other things, if non 0 then it will fail
+            
+            - name: Terraform plan
+              id: plan
+              run: terraform plan -no-color -input=false -out planfile  # like a dry run (-no-color => while returing output not need of color to save GPU, -input no user input is accepted, -out the save the put put in planout file)
+              continue-on-error: true # even the error comes proceed with next step (we will handle in next step)
+            
+            - name: Terraform plan status
+              #we check plan is failed?
+              if: steps.plan.outcome == 'failure'
+              run: exit 1
+            
+            - name: Terraform apply
+              id: apply
+              #run this only if push happens to main  branch
+              if: github.ref == 'refs/heads/main' && github.event_name == 'push' 
+              run: terraform apply -auto-approve -input=false -parallelism=1 planfile #run terraform apply with present in planfile with out asking confirmation and no user input and don't do parallelism
+              
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v4.1.0 # https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions
+              with:
+                aws-access-key-id:  ${{secrets.AWS_ACCESS_KEY_ID}}
+                aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+                aws-region: ${{env.AWS_REGION}}
+            
+            - name: Get Kube Config file
+              id: getConfig
+              if: steps.apply.outcome == 'success'
+              run: aws eks update-kubeconfig --region ${{env.AWS_REGION}} --name ${{env.EKS_CLUSTER}} #get the kubeconfig file from eks
+            
+            - name: Install ingress controller
+              if: steps.getConfig.outcome == 'success'
+              run: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.12.2/deploy/static/provider/aws/deploy.yaml #once the kube config file is available you can run k8s cmd's
