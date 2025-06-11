@@ -39,5 +39,13 @@ resourceName = server <br/>
 attributeName = public_ip (this will present in state file)
 
 ### Backend - s3
-- Don't stor the state file in SCM it may have sensitive info's
+- Don't store the state file in SCM it may have sensitive info's
 - We can store it in s3 and terraform have integration for s3
+
+## State file Management
+1. Backend (remote):
+    - Applly the configuration and store the state file in remote backend `S3` not on Git
+2. State Locking:
+    - It will help when 2 are more persons are using the state file at the same time
+    - `DynomoDB` is the one which is used to store the locking information
+    - this is to avoid the `race condition`
