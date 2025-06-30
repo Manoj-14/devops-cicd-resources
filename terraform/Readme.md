@@ -49,3 +49,4 @@ attributeName = public_ip (this will present in state file)
     - It will help when 2 are more persons are using the state file at the same time
     - `DynomoDB` is the one which is used to store the locking information
     - this is to avoid the `race condition`
+    - during state locking mention Partition as `LockID` with type `string` if not it will throw error

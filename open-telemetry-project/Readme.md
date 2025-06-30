@@ -24,3 +24,7 @@
     - terraform apply
 - Teraaform backend using S3 and state locking using DynomoDB.
 - Always go with modular approach for tf, helps for reusablity
+- Requirements for EKS:
+    - 2 IAM roles , 1 for control plane and another for node
+    - So create a IAM role , attach a policy then create a EKS cluster with that
+    - Same as above create IAM role , attach a policy then add a node group to that
