@@ -39,9 +39,9 @@ methods for collecting metrics
 ### Types of telemetry data (MELT)
 M- Metric, E-Event, L-Log, T-Trace
 1. Event: event happed at a given time
-2. Metric: Is an aggrigated value representing events in a given period of time (100 bags of chips every min)
-3. Log: Value detailed representation of event
-4. traces: Shows the interaction od mocroservices to fulfil request
+2. Metric (Waht us the state of system): Is an aggrigated value representing events in a given period of time (100 bags of chips every min)
+3. Log(Why the system is in that state): Value detailed representation of event
+4. traces (How the system come to that state or how to fix the issue): Shows the interaction od mocroservices to fulfil request
 
 ### Methos of Metric Collection (Push V/s Scrape)
 1. Push method: Apps or micro service send metrics to an endpoint , via TCP, UDP, HTTP (graphite)

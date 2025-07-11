@@ -80,3 +80,56 @@ sudo systemctl status prometheus
                     labels:
                     app: "prometheus"
         ```
+        - Node Exporater as a service
+        ```bash
+        sudo groupadd --system prometheus
+        sudo useradd -s /sbin/nologin  --system -g prometheus prometheus
+        sudo mkdir /var/lib/node/
+        sudo mv node_exporter /var/lib/node/
+        sudo nano /etc/systemd/system/node.service #paste the service code in link https://raw.githubusercontent.com/aussiearef/Prometheus/refs/heads/main/node.service
+        sudo chown -R prometheus:prometheus /var/lib/node/
+        sudo chown -R prometheus:prometheus /var/lib/node/*
+        sudo chmod -R 775 /var/lib/node/
+        sudo chmod -R 775 /var/lib/node/*
+        sudo systemctl daemon-reload
+        sudo systemctl start node
+        sudo systemctl enable node
+        sudo systemctl status node
+        ```
+## Data model
+- Prometheus store the data as time series
+- Every time series is identified by metric name and lables
+- Labels are a key and value pair
+- Labels are optional `<metric name> {key=value,key=value,...}`
+
+## Data Types (in promQL)
+- Scaler :
+    - Float (1, 1.5) (includes int)
+    - String
+- Instant Vectors :
+    - Instant vector selectors allow the selection of a set of time series and a single sample value for the each at given timestamp
+    - only metrlic name is specified
+    - Result can be filtered by providing labels
+- Range vectors
+    - similar to instant vectors except they select range of samples
+## Operators
+-  \-, \+ , - , *, / ,%, ^
+- BInary operatoe
+- set binary operator (only on instant vectors)
+    - and (common in 2 instant vectors)
+    - or (union on of all instant vector)
+    - unless (1st instant vector that is not present on both `)
+- functions
+    - delta(\<instant vectors>)
+    - idelta(\<Range vector>)
+    - log2(\<insatnt vector>)
+    - log10(\<insatnt vector>)
+    - ln(\<insatnt vector>)
+    - sort(\<insatnt vector>)
+    - sort_desc(\<insatnt vector>)
+    - timestamp(\<insatnt vector>)
+    - avg_over_time(\<range vector>)
+    - sum_over_time(\<range vector>)
+    - min_over_time(\<range vector>)
+    - max_over_time(\<range vector>)
+    - count_over_time(\<range vector>)
