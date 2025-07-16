@@ -133,3 +133,5 @@ sudo systemctl status prometheus
     - min_over_time(\<range vector>)
     - max_over_time(\<range vector>)
     - count_over_time(\<range vector>)
+- prometheus remote write:
+    - allows to send a metrics to other systems, including other instances of Prometheus.
